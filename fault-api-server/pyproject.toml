@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "esp32-fault-api-server"
+version = "1.0.0"
+description = "Test API server for ESP32 fault detection system"
+authors = [{name = "murkyshelf"}]
+dependencies = [
+    "flask>=2.0.0",
+    "requests>=2.25.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0.0",
+    "black>=21.0.0",
+    "flake8>=3.8.0"
+]

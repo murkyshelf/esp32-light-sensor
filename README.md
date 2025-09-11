@@ -1,28 +1,31 @@
-# ESP32 Light Sensor with WebSocket Communication
+# ESP32 Light Sensor with Fault Detection System
 
-A real-time IoT light sensor project using ESP32 that reads analog light values and transmits them via WebSocket to a Python server for monitoring and logging.
+A real-time IoT fault detection system using ESP32 that monitors light circuits, detects various fault types, and reports them via HTTP API to a centralized server.
 
 ## 🌟 Features
 
-- **Real-time Light Sensing**: Reads analog values from GPIO34 (ADC1_CHANNEL_6)
-- **WiFi Connectivity**: Connects to WiFi network automatically
-- **WebSocket Communication**: Streams sensor data in JSON format every 5 seconds
-- **Python Server**: Receives and logs data with enhanced formatting
-- **12-bit ADC Resolution**: High precision voltage readings (0-3.3V range)
-- **Auto-reconnection**: Robust connection handling for both WiFi and WebSocket
+- **🔍 Intelligent Fault Detection**: Detects short circuits, open circuits, overvoltage, undervoltage, and fluctuations
+- **📡 HTTP API Integration**: Sends fault reports via POST requests with JSON payload
+- **⚡ Real-time Monitoring**: Continuous voltage monitoring with 1-second sampling
+- **🏷️ Light Identification**: Configurable light ID and device identification
+- **🕐 Accurate Timestamps**: ISO 8601 formatted timestamps with NTP synchronization
+- **🔐 Secure API**: API key authentication for server communication
+- **📊 Multiple Fault Types**: Comprehensive fault classification system
+- **🔄 Auto-reconnection**: Robust WiFi and HTTP error handling
 
 ## 📁 Project Structure
 
 ```
 ├── main/
 │   ├── CMakeLists.txt          # Build configuration
-│   ├── main.c                  # ESP32 firmware source code
+│   ├── main.c                  # Original WebSocket version (legacy)
+│   ├── main_fault_detector.c   # New fault detection firmware
 │   └── idf_component.yml       # Component dependencies
-├── websocket-server/
-│   ├── server.py               # Basic WebSocket server
-│   ├── server_with_logs.py     # Enhanced server with detailed logging
+├── fault-api-server/
+│   ├── test_server.py          # Test API server (Flask)
 │   ├── pyproject.toml          # Python project configuration
-│   └── README.md               # Server documentation
+│   └── README.md               # API server documentation
+├── websocket-server/           # Legacy WebSocket server (for reference)
 ├── build/                      # Compiled binaries and build files
 ├── CMakeLists.txt              # Main build configuration
 └── sdkconfig                   # ESP-IDF configuration
@@ -39,9 +42,9 @@ A real-time IoT light sensor project using ESP32 that reads analog light values 
 ## 🔌 Wiring Diagram
 
 ```
-ESP32 GPIO34 (ADC1_CH6) ────── Solar cell ────── GND
-                     
-                     
+ESP32 GPIO34 (ADC1_CH6) ────── Light Sensor ────── 3.3V
+                     │
+                     └────── 10kΩ Resistor ────── GND
 ```
 
 ## 🚀 Quick Start
@@ -61,15 +64,25 @@ cd esp32-light-sensor
 
 ### 3. Configure ESP32
 
-Edit `main/main.c` to set your WiFi credentials and server IP:
+Edit `main/main_fault_detector.c` to set your configuration:
 
 ```c
-#define WIFI_SSID      "YourWiFiName"
-#define WIFI_PASS      "YourWiFiPassword"
-#define WEBSOCKET_URI  "ws://YOUR_SERVER_IP:8080"
+#define WIFI_SSID           "YourWiFiName"
+#define WIFI_PASS           "YourWiFiPassword"
+#define FAULT_API_URL       "http://YOUR_SERVER_IP:3000/api/fault/esp32"
+#define API_KEY             "sexophobia69"
+#define LIGHT_ID            "CB-420 light#2"
 ```
 
-### 4. Build and Flash ESP32
+### 4. Start API Server
+
+```bash
+cd fault-api-server
+pip install flask
+python3 test_server.py
+```
+
+### 5. Build and Flash ESP32
 
 ```bash
 # Setup ESP-IDF environment
@@ -85,50 +98,75 @@ idf.py flash
 idf.py monitor
 ```
 
-### 5. Start WebSocket Server
+## � Fault Detection Types
 
-```bash
-cd websocket-server
-python3 server_with_logs.py
-```
+| Fault Type | Voltage Range | Description |
+|------------|---------------|-------------|
+| **short_circuit** | < 0.3V | Short circuit detected in lighting circuit |
+| **open_circuit** | > 3.2V | Open circuit or disconnected load |
+| **overvoltage** | 3.1V - 3.2V | Voltage above normal operating range |
+| **undervoltage** | 0.3V - 1.0V | Voltage below normal operating range |
+| **voltage_fluctuation** | Any | Sudden voltage change > 0.5V |
+| **normal** | 1.0V - 3.0V | Normal operation |
 
 ## 📊 Data Format
 
-The ESP32 sends JSON data every 5 seconds:
+The ESP32 sends HTTP POST requests to the API endpoint:
 
+```bash
+POST /api/fault/esp32
+Headers:
+  Content-Type: application/json
+  x-api-key: sexophobia69
+
+Body:
+{
+  "fault-type": "short_circuit",
+  "light-ID": "CB-420 light#2",
+  "timestamp": "2025-09-07T10:37:27Z"
+}
+```
+
+Server response:
 ```json
 {
-  "voltage": 2.845123
+  "status": "success",
+  "message": "Fault report received successfully",
+  "report_id": 123,
+  "received_at": "2025-09-07T10:37:28Z"
 }
-```
-
-Server logs display:
-```
-[01:23:45] 🔗 Client connected from 192.168.1.100
-[01:23:50] 📊 ESP32 Data: {
-  "voltage": 2.845123
-}
-[01:23:50] ⚡ Voltage Reading: 2.845123V
-[01:23:50] 📤 Sent echo response to ESP32
 ```
 
 ## 🛠️ Configuration
 
-### ESP32 Configuration (`main/main.c`)
+### ESP32 Configuration (`main/main_fault_detector.c`)
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `WIFI_SSID` | WiFi network name | "ssid" |
-| `WIFI_PASS` | WiFi password | "password" |
-| `WEBSOCKET_URI` | WebSocket server address | "ws://\<address\>:8080" |
-| `ADC_CHANNEL` | ADC input pin | ADC1_CHANNEL_6 (GPIO34) |
+| `WIFI_SSID` | WiFi network name | "Ce4" |
+| `WIFI_PASS` | WiFi password | "p4msujax" |
+| `FAULT_API_URL` | API endpoint URL | "http://10.230.25.216:3000/api/fault/esp32" |
+| `API_KEY` | API authentication key | "sexophobia69" |
+| `LIGHT_ID` | Unique light identifier | "CB-420 light#2" |
+| `DEVICE_ID` | ESP32 device identifier | "ESP32-001" |
 
-### Server Configuration (`websocket-server/server_with_logs.py`)
+### Fault Detection Thresholds
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `NORMAL_MIN_VOLTAGE` | Minimum normal voltage | 1.0V |
+| `NORMAL_MAX_VOLTAGE` | Maximum normal voltage | 3.0V |
+| `SHORT_CIRCUIT_VOLTAGE` | Short circuit threshold | < 0.3V |
+| `OPEN_CIRCUIT_VOLTAGE` | Open circuit threshold | > 3.2V |
+| `OVERVOLTAGE_THRESHOLD` | Overvoltage detection | > 3.1V |
+
+### API Server Configuration (`fault-api-server/test_server.py`)
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `host` | Server listening address | "0.0.0.0" |
-| `port` | WebSocket port | 8080 |
+| `port` | API server port | 3000 |
+| `api_key` | Required API key | "sexophobia69" |
 
 ## 🔍 Monitoring and Debugging
 
@@ -180,6 +218,22 @@ pkill -f server.py
 # Wait a few seconds, then restart server
 ```
 
+## 📈 Extending the Project
+
+### Adding More Sensors
+- Temperature/Humidity (DHT22)
+- Motion detection (PIR sensor)
+- Air quality (MQ-135)
+
+### Data Storage
+- SQLite database integration
+- CSV file logging
+- Cloud database (Firebase, InfluxDB)
+
+### Web Dashboard
+- Real-time charts with Chart.js
+- Historical data visualization
+- Mobile-responsive interface
 
 ## 🤝 Contributing
 

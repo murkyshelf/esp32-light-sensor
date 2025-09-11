@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+test_server.py
+esp32_fault_api_server.egg-info/PKG-INFO
+esp32_fault_api_server.egg-info/SOURCES.txt
+esp32_fault_api_server.egg-info/dependency_links.txt
+esp32_fault_api_server.egg-info/requires.txt
+esp32_fault_api_server.egg-info/top_level.txt
