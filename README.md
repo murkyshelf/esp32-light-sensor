@@ -39,9 +39,9 @@ A real-time IoT light sensor project using ESP32 that reads analog light values 
 ## 🔌 Wiring Diagram
 
 ```
-ESP32 GPIO34 (ADC1_CH6) ────── Light Sensor ────── 3.3V
-                     │
-                     └────── 10kΩ Resistor ────── GND
+ESP32 GPIO34 (ADC1_CH6) ────── Solar cell ────── GND
+                     
+                     
 ```
 
 ## 🚀 Quick Start
@@ -118,9 +118,9 @@ Server logs display:
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `WIFI_SSID` | WiFi network name | "Ce4" |
-| `WIFI_PASS` | WiFi password | "p4msujax" |
-| `WEBSOCKET_URI` | WebSocket server address | "ws://10.230.25.216:8080" |
+| `WIFI_SSID` | WiFi network name | "ssid" |
+| `WIFI_PASS` | WiFi password | "password" |
+| `WEBSOCKET_URI` | WebSocket server address | "ws://\<address\>:8080" |
 | `ADC_CHANNEL` | ADC input pin | ADC1_CHANNEL_6 (GPIO34) |
 
 ### Server Configuration (`websocket-server/server_with_logs.py`)
@@ -180,22 +180,6 @@ pkill -f server.py
 # Wait a few seconds, then restart server
 ```
 
-## 📈 Extending the Project
-
-### Adding More Sensors
-- Temperature/Humidity (DHT22)
-- Motion detection (PIR sensor)
-- Air quality (MQ-135)
-
-### Data Storage
-- SQLite database integration
-- CSV file logging
-- Cloud database (Firebase, InfluxDB)
-
-### Web Dashboard
-- Real-time charts with Chart.js
-- Historical data visualization
-- Mobile-responsive interface
 
 ## 🤝 Contributing
 
